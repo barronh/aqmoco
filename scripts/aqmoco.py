@@ -5,12 +5,17 @@ import numpy as np
 from datetime import datetime
 from symtable import symtable
 import argparse
-from timefuncs import daymean
+from timefuncs import mda8, nstepf
+from functools import partial
 
 times = []
 times.append(time.time())
 
 parser = argparse.ArgumentParser()
+parser.add_argument(
+    '--hour-func', default='mean', dest='hourfunc',
+    choices=['max', 'mean', 'mda8', 'epamda8']
+)
 parser.add_argument('--freq', default='d', choices=['H', 'd'])
 parser.add_argument('--variables', help='Subset variables')
 parser.add_argument(
@@ -222,12 +227,22 @@ for key in 'site_key longitude latitude'.split():
     outfile.copyVariable(atobsfile.variables[key], key=key)
 
 if args.freq == 'd':
-    if outfile.TSTEP == 10000:
-        outfile.TSTEP = 240000
-        dayfile = outfile.applyAlongDimensions(TSTEP=daymean)
-        outfile = dayfile
+    if args.hourfunc == 'mda8':
+        # Assumes appropriate alignment
+        hour2day = partial(mda8, h=24)
+    if args.hourfunc == 'epamda8':
+        hour2day = partial(mda8, h=17)
     else:
-        raise ValueError('Input time step is not hourly')
+        times = outfile.getTimes()
+        dates = [datetime(t.year, t.month, t.day) for t in times]
+        ndates = len(set([datetime(t.year, t.month, t.day) for t in times]))
+        ntpd = len(times) / ndates
+        if (tpd % 1) == 0:
+            hour2day = partial(nstepf, n=ntpd, func=args.hourfunc)
+        else:
+            raise ValueError('Input time step is not hourly')
+    dayfile = outfile.applyAlongDimensions(TSTEP=hour2day)
+    outfile = dayfile
 elif args.freq == 'H':
     pass
 else:

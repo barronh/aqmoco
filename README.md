@@ -22,6 +22,7 @@ missing data where an observation is not available. (dims: time, lay, site)
   * numpy>=1.2
   * pandas>=0.13
   * PseudoNetCDF>=3.0.1
+  * pyproj
 
 # CONTENTS
 
@@ -30,11 +31,11 @@ missing data where an observation is not available. (dims: time, lay, site)
 |-- README.md
 |-- run.sh
 |-- modinput
-|   |-- COMBINE_ACONC_v53_intel18.0_2016_CONUS_201607.nc
-|   `-- COMBINE_ACONC_v53_intel18.0_2016_CONUS_201608.nc
+|   |-- COMBINE_ACONC_v53_intel18.0_2016_CONUS_201607.nc # example model file
+|   `-- COMBINE_ACONC_v53_intel18.0_2016_CONUS_201608.nc # example day 2
 |-- obsinput/
-|   |-- AQS_daily_data_2016.csv
-|   `-- AQS_full_site_list.csv
+|   |-- AQS_full_site_list.csv # example meta data
+|   `-- AQS_daily_data_2016.csv # example obs data
 |-- defn
 |   |-- moddefns.txt
 |   |-- modsimple.txt
