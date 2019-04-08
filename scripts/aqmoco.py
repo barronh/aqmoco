@@ -14,7 +14,8 @@ times.append(time.time())
 parser = argparse.ArgumentParser()
 parser.add_argument(
     '--hour-func', default='mean', dest='hourfunc',
-    choices=['max', 'mean', 'mda8', 'epamda8']
+    choices=['max', 'mean', 'mda8', 'epamda8'],
+    help='Convert hourly model inputs to daily outputs'
 )
 parser.add_argument('--freq', default='d', choices=['H', 'd'])
 parser.add_argument('--variables', help='Subset variables')
@@ -230,17 +231,21 @@ if args.freq == 'd':
     if args.hourfunc == 'mda8':
         # Assumes appropriate alignment
         hour2day = partial(mda8, h=24)
-    if args.hourfunc == 'epamda8':
+    elif args.hourfunc == 'epamda8':
         hour2day = partial(mda8, h=17)
     else:
-        times = outfile.getTimes()
-        dates = [datetime(t.year, t.month, t.day) for t in times]
-        ndates = len(set([datetime(t.year, t.month, t.day) for t in times]))
-        ntpd = len(times) / ndates
-        if (tpd % 1) == 0:
+        mtimes = outfile.getTimes()
+        dates = [datetime(t.year, t.month, t.day) for t in mtimes]
+        ndates = len(set([datetime(t.year, t.month, t.day) for t in mtimes]))
+        ntpd = len(mtimes) / ndates
+        if (ntpd % 1) == 0:
             hour2day = partial(nstepf, n=ntpd, func=args.hourfunc)
         else:
             raise ValueError('Input time step is not hourly')
+
+    if hasattr(outfile, 'TSTEP'):
+        outfile.TSTEP = 240000
+
     dayfile = outfile.applyAlongDimensions(TSTEP=hour2day)
     outfile = dayfile
 elif args.freq == 'H':
@@ -277,5 +282,5 @@ for key in assignkeys:
 obsfile.save(obsoutpath)
 
 times.append(time.time())
-print('mod extract', np.diff(times[-2:]))
+print('obs output', np.diff(times[-2:]))
 print('All', np.sum(np.diff(times)))

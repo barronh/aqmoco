@@ -15,9 +15,10 @@ v0.02rc
 
 v0.01 - not official release
 ----------------------------
-1. Reads AQS meta-data
-2. Reads AQS observations
-3. Pairs AQS meta-data and observations
-4. Extracts CMAQ at AQS (proxy for PseudoNetCDF funcionality; no IOAPI specific)
+1. Reads AMET meta-data
+2. Reads AMET observations
+3. Pairs AMET meta-data and observations
+4. Extracts CMAQ at AMET (proxy for PseudoNetCDF funcionality; no IOAPI specific)
 5. Adds continuous time dimension for obs (with missing values)
 6. Averages CMAQ from hourly to daily with time zone awareness
+7. Saves model extract and obs out to netcdf.

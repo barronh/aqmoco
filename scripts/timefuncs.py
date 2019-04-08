@@ -54,13 +54,30 @@ def mda8(x, h=24):
     from functools import partial
     import numpy as np
 
-    fa8 = partial(np.convolve, [1/8] * 8, mode='full')
+    n = 8
+    fa8 = partial(np.convolve, [1/n] * n, mode='valid')
     a8 = fa8(x)
-    if h == 24:
-        # Trim off invalid steps and incomplete days
-        out = a8[4:-20].reshape(-1, 24).max(1)
-    elif h == 17:
-        # Use days starting at 7am and ending only times starting a 7am
-        out = a8[7:-17].reshape(-1, 24)[:, :17].max(1)
+    
+    # complete overlap starts at n - 1
+    # if mode == 'valid':
+    nedge = 0
+    # elif mode = 'full':
+    #     nedge = n - 1
 
-    return out
+    start = nedge
+    if h == 17:
+        # assuming 0UTC start, the 7am hour is n + 7
+        start = n + 7
+
+    nvalid = a8.size - start - nedge
+    wholedayhours = int(nvalid // 24 * 24)
+    end = start + wholedayhours
+
+    # Use only days with complete data
+    usevals = a8[start:end].reshape(-1, 24)
+
+    if h == 17:
+        # only 7-23 are valid starting at 7am, that is the first 17
+        usevals = usevals[:, :h]
+    
+    return usevals.max(1)
